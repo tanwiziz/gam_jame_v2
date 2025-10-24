@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 9a05f5e278d7e794b861aa0979ece425
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 211123
+  packageName: The Swamper
+  packageVersion: 1.0
+  assetPath: Assets/Swamper/Stand/Standard_Two_Sided .shader
+  uploadId: 474752

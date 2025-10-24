@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 20ac150eaf9267b4bb1c06be080f8b04
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 211123
+  packageName: The Swamper
+  packageVersion: 1.0
+  assetPath: Assets/Swamper/Materials/MAT_SWAMPER__BODY.mat
+  uploadId: 474752
