@@ -21,7 +21,8 @@ MonoBehaviour:
   onStateChange:
     m_PersistentCalls:
       m_Calls: []
-  position: {x: -19, y: -94}
+  position: {x: 347, y: -60.039993}
+  outputOnLeft: 1
   references:
     version: 2
     RefIds:

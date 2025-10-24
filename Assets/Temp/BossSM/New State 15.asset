@@ -21,7 +21,8 @@ MonoBehaviour:
   onStateChange:
     m_PersistentCalls:
       m_Calls: []
-  position: {x: 343, y: 271}
+  position: {x: 957, y: 352}
+  outputOnLeft: 0
   references:
     version: 2
     RefIds:
@@ -29,5 +30,3 @@ MonoBehaviour:
       type: {class: BossChaseState, ns: , asm: Assembly-CSharp}
       data:
         stateName: BossChaseState
-        moveSpeed: 6
-        useNavMeshIfAvailable: 1
