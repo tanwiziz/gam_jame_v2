@@ -15,13 +15,13 @@ MonoBehaviour:
   active: 1
   redOutRedIn:
     m_OverrideState: 1
-    m_Value: 150
+    m_Value: 200
   redOutGreenIn:
     m_OverrideState: 1
-    m_Value: 110
+    m_Value: 200
   redOutBlueIn:
     m_OverrideState: 1
-    m_Value: 110
+    m_Value: 200
   greenOutRedIn:
     m_OverrideState: 0
     m_Value: 0
