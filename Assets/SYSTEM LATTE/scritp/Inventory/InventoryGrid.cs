@@ -1,91 +1,117 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+/// <summary>
+/// The backend logic for the inventory grid, managing item placement and cell states.
+/// </summary>
 public class InventoryGrid : MonoBehaviour
 {
-    public int width = 9;
-    public int height = 9;
+    // ใช้ enum จาก InventoryCellUI เพื่อความง่าย
+    public InventoryCellUI.CellState defaultState = InventoryCellUI.CellState.Unlocked;
 
-    [Header("Start Area (unlocked)")]
-    public int startW = 5; // กว้าง 5
-    public int startH = 3; // สูง 3
-
-    public InventoryCell[,] cells;
-
-    void Awake()
+    private class GridCell
     {
-        if (cells == null || cells.GetLength(0) != width || cells.GetLength(1) != height)
-        {
-            cells = new InventoryCell[width, height];
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    cells[x, y] = new InventoryCell();
+        public InventoryCellUI.CellState state;
+        public ItemInstance item; // null if cell is empty
 
-                    // ✅ ปลดล็อกช่องตรงกลาง 5x3
-                    if (x >= 2 && x <= 6 && y >= 3 && y <= 5)
-                        cells[x, y].state = CellState.Unlocked;
-                    else
-                        cells[x, y].state = CellState.Locked;
-                }
+        public GridCell(InventoryCellUI.CellState initialState)
+        {
+            state = initialState;
+            item = null;
+        }
+    }
+
+    [Header("Grid Dimensions")]
+    public int gridW = 9;
+    public int gridH = 9;
+
+    private GridCell[,] grid;
+
+    private void Awake()
+    {
+        InitializeGrid();
+    }
+
+    public void InitializeGrid()
+    {
+        grid = new GridCell[gridW, gridH];
+        for (int y = 0; y < gridH; y++)
+        {
+            for (int x = 0; x < gridW; x++)
+            {
+                // TODO: โหลดสถานะล็อค/ปลดล็อคจากไฟล์บันทึกจริง
+                grid[x, y] = new GridCell(defaultState); 
             }
         }
     }
 
-    public bool IsInside(Vector2Int p) => p.x >= 0 && p.y >= 0 && p.x < width && p.y < height;
-    public InventoryCell GetCell(Vector2Int p) => IsInside(p) ? cells[p.x, p.y] : null;
-
-    public IEnumerable<ItemInstance> AllItems()
+    public GridCell GetCell(Vector2Int pos)
     {
-        var set = new HashSet<ItemInstance>();
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                if (cells[x, y].item != null)
-                    set.Add(cells[x, y].item);
-        return set;
+        if (!IsInside(pos)) return null;
+        return grid[pos.x, pos.y];
     }
 
-    public void RemoveItem(ItemInstance item)
+    public bool IsInside(Vector2Int pos)
     {
-        if (item == null) return;
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                if (cells[x, y].item == item) cells[x, y].item = null;
+        return pos.x >= 0 && pos.x < gridW && pos.y >= 0 && pos.y < gridH;
     }
 
-    public bool TryPlaceItem(ItemInstance item) // auto-fit
+    /// <summary>
+    /// Checks if an item can be placed at the given root position and rotation.
+    /// </summary>
+    public bool CanPlaceItem(ItemInstance item, Vector2Int root)
     {
-        for (int y = 0; y < height; y++)
-            for (int x = 0; x < width; x++)
-                if (TryPlaceItem(item, new Vector2Int(x, y))) return true;
-        return false;
-    }
+        if (item.def == null) return false;
 
-    public bool TryPlaceItem(ItemInstance item, Vector2Int root)
-    {
-        if (item == null || item.def == null) return false;
-        var shape = (item.def.shapeOffsets != null && item.def.shapeOffsets.Length > 0)
-                    ? item.def.shapeOffsets : new[] { Vector2Int.zero };
+        // คำนวณเซลล์ทั้งหมดที่ไอเทมจะครอบครอง
+        Vector2Int[] occupiedCells = item.GetOccupiedCells(root);
 
-        // ตรวจทุกช่องต้องอยู่ในเขตปลดล็อกและว่าง
-        foreach (var ofs in shape)
+        foreach (var cellPos in occupiedCells)
         {
-            var p = root + ofs;
-            if (!IsInside(p)) return false;
-            var c = cells[p.x, p.y];
-            if (c.state != CellState.Unlocked) return false;
-            if (c.item != null) return false;
-        }
+            // 1. ตรวจสอบขอบเขต
+            if (!IsInside(cellPos))
+            {
+                Debug.LogWarning($"Placement failed: Out of bounds at {cellPos}");
+                return false;
+            }
 
-        // วางจริง
-        foreach (var ofs in shape)
-        {
-            var p = root + ofs;
-            cells[p.x, p.y].item = item;
+            // 2. ตรวจสอบสถานะและว่ามีไอเทมอื่นอยู่หรือไม่
+            var cell = GetCell(cellPos);
+            if (cell.state == InventoryCellUI.CellState.Locked)
+            {
+                Debug.LogWarning($"Placement failed: Cell at {cellPos} is locked.");
+                return false;
+            }
+            if (cell.item != null)
+            {
+                // ตรวจสอบว่าไอเทมที่อยู่ในช่องนั้นคือไอเทมที่เรากำลังจะวางหรือไม่
+                // (กรณีลากวางทับตัวเอง) - ในตัวอย่างนี้ เราถือว่าเป็นการวางไอเทมใหม่เสมอ
+                Debug.LogWarning($"Placement failed: Cell at {cellPos} is already occupied by an item.");
+                return false;
+            }
         }
-        item.gridPosition = root; // <<< บันทึกรากของไอเทม (เพิ่มฟิลด์นี้ใน ItemInstance)
         return true;
     }
 
+    /// <summary>
+    /// Attempts to place the item into the grid.
+    /// </summary>
+    public bool TryPlaceItem(ItemInstance item, Vector2Int root)
+    {
+        if (!CanPlaceItem(item, root)) return false;
+
+        // ลบไอเทมเก่าออกก่อน ถ้าไอเทมนี้ถูกย้ายมาจากที่อื่น
+        // (สำหรับการใช้งานจริง คุณต้องเพิ่มฟังก์ชัน RemoveItem ก่อน)
+
+        Vector2Int[] occupiedCells = item.GetOccupiedCells(root);
+        item.rootPosition = root;
+
+        foreach (var cellPos in occupiedCells)
+        {
+            GetCell(cellPos).item = item;
+        }
+        
+        // ควรแจ้งเตือน UI ให้อัปเดตหลังการวางสำเร็จ
+        // (ใน UI_Inventory.cs จะมีการเรียก UpdateGridIcons() หลังวางสำเร็จ)
+        return true;
+    }
 }

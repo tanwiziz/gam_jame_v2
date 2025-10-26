@@ -1,19 +1,19 @@
-// *** แก้ไขตรงนี้: ต้องมี using UnityEngine และ UnityEngine.AI ***
+// ต้องมี 🟢 using UnityEngine.AI;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
-    // ... (ตัวแปรเดิม) ...
-    public float moveSpeed = 3f;     
+    // ตัวแปรสาธารณะที่ตั้งค่าใน Inspector
+    public float moveSpeed = 5f;     
     public float attackRange = 2f;   
-    public float chaseRange = 15f;   
+    public float chaseRange = 20f;   
     public float attackCooldown = 1.5f; 
     
     private float lastAttackTime;        
     private Transform player;
     private NavMeshAgent agent;
-    private Animator animator; // 🟢 ตัวแปร Animator
+    private Animator animator; 
 
     void Awake()
     {
@@ -21,69 +21,72 @@ public class EnemyController : MonoBehaviour
         if (playerObj != null) player = playerObj.transform;
 
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>(); // 🟢 ต้องหา Animator Component
+        animator = GetComponent<Animator>(); 
 
         if (agent != null)
         {
-            // 🟢 โค้ดแก้ปัญหา Spawn นอก NavMesh (CS0246)
+            // 🟢 โค้ดแก้ปัญหา Spawn นอก NavMesh (สำคัญมาก)
             NavMeshHit hit;
             if (NavMesh.SamplePosition(transform.position, out hit, 5f, NavMesh.AllAreas))
             {
                 transform.position = hit.position;
             }
 
+
+            
             agent.speed = moveSpeed;
-            agent.updateRotation = false; 
+            agent.updateRotation = false; // ให้โค้ด LookAtDirection จัดการการหมุน
         }
 
-        lastAttackTime = -attackCooldown;
+        lastAttackTime = -attackCooldown    ;
     }
 
     void Update()
     {
+        // หยุดทำงานหาก Agent ถูกปิด (เช่น เมื่อมอนสเตอร์ตาย)
         if (player == null || agent == null || !agent.enabled || animator == null) 
             return;
 
         float distance = Vector3.Distance(transform.position, player.position);
+        
+        // สั่งให้หันหน้าเข้าหาผู้เล่นเสมอ
         LookAtDirection(player.position - transform.position); 
 
-        // 1. วิ่งไล่ตาม (นอกระยะ Stopping Distance)
         if (distance <= chaseRange)
         {
             if (distance > agent.stoppingDistance)
             {
+                // สถานะ วิ่งไล่ตาม (CHASE/RUN)
                 agent.SetDestination(player.position);
                 agent.isStopped = false;
 
-                // 🟢 ANIMATION: วิ่ง (Run/Walking)
                 animator.SetBool("IsAttacking", false);
-                animator.SetFloat("Speed", agent.velocity.magnitude > 0.1f ? moveSpeed : 0f);
+                // ใช้ค่า moveSpeed เพื่อควบคุม Animation Parameter "Speed"
+                animator.SetFloat("Speed", agent.velocity.magnitude > 0.1f ? moveSpeed : 0f); 
             }
-            // 2. โจมตี (อยู่ในระยะ Stopping Distance)
             else 
             {
+                // สถานะ โจมตี (ATTACK)
                 agent.isStopped = true;
 
-                // 🟢 ANIMATION: โจมตี (Attack)
                 animator.SetBool("IsAttacking", true);
                 animator.SetFloat("Speed", 0f); // หยุดวิ่ง
 
-                if (distance <= attackRange && Time.time >= lastAttackTime + attackCooldown)
+                if (Time.time >= lastAttackTime + attackCooldown)
                 {
                     Attack();
                 }
             }
         }
-        // 3. อยู่นอกระยะ Chase Range
-        else
+        else // อยู่นอกระยะ Chase Range (IDLE)
         {
             agent.isStopped = true;
             animator.SetBool("IsAttacking", false);
-            animator.SetFloat("Speed", 0f); // 🟢 ANIMATION: Idle
+            animator.SetFloat("Speed", 0f); 
         }
     }
 
-    // *** แก้ไขตรงนี้: ต้องมีฟังก์ชันนี้ (CS0103) ***
+    // 🟢 ฟังก์ชัน LookAtDirection (แก้ปัญหา CS0103)
     void LookAtDirection(Vector3 direction)
     {
         Vector3 flatDirection = new Vector3(direction.x, 0, direction.z).normalized;
@@ -95,10 +98,10 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    // *** แก้ไขตรงนี้: ต้องมีฟังก์ชันนี้ (หากหายไป) ***
+    // 🟢 ฟังก์ชัน Attack
     void Attack()
     {
         lastAttackTime = Time.time;
-        Debug.Log($"{gameObject.name} กำลังโจมตีผู้เล่น!");
+        // ... (ใส่โค้ดทำความเสียหายให้ผู้เล่นตรงนี้) ...
     }
 }

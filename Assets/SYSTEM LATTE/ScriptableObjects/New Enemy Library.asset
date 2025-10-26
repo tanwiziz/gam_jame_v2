@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: New Enemy Library
   m_EditorClassIdentifier: 
   enemies:
-  - {fileID: 7821249515664387655, guid: 0e0c53f97fde9ae4c8ef8233f8db0093, type: 3}
-  - {fileID: 9045314674433664366, guid: 47ae3afde29a8784b9aad33163ea25cf, type: 3}
-  - {fileID: 1491016652082466315, guid: 849e4722b91b2ed4eac5683a6c1f8f78, type: 3}
+  - {fileID: 6256662457618178166, guid: 063f3cb97b2f6274481d48a31f268da0, type: 3}
+  - {fileID: 3569044554266064926, guid: 8d1b871a984d91b49ae9cac7d7218661, type: 3}
+  - {fileID: 546035408243335217, guid: 3f6e582a4b8d85b44bf311b73504000a, type: 3}

@@ -32,13 +32,13 @@ public class WeaponShooter : MonoBehaviour
 
         foreach (var e in enemies)
         {
-            float dist = Vector3.Distance(transform.position, e.transform.position);
-            if (dist < minDist && dist <= range)
-            {
+             float dist = Vector3.Distance(transform.position, e.transform.position);
+             if (dist < minDist && dist <= range)
+             {
                 minDist = dist;
-                closest = e;
-            }
-        }
+                 closest = e;
+             }
+         }
         return closest;
-    }
+     }
 }
